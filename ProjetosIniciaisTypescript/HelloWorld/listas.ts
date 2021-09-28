@@ -30,4 +30,4 @@ let listaNova:number[] = [20, 30]
 listaNova.push(40)
 
 listaNova.splice(1,1)
-console.log(listaNova);
+console.log(listaNova)
