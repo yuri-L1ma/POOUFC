@@ -31,4 +31,4 @@ listaNova.push(40)
 
 listaNova.splice(1,1)
 console.log(listaNova)
-//Muito massa
+//Muito mass
