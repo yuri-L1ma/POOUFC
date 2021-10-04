@@ -19,4 +19,4 @@ console.log(str)
 
 let qualqueTipo:any = 26
 qualqueTipo = "Yuri"
-console.log(qualqueTipo)
+console.log(qualqueTipo);
