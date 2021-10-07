@@ -27,14 +27,14 @@ class Entity {
 }
 
 class Board {
-  nl: number
   nc: number
+  nl: number
   step: number
   background: p5.Image
 
-  constructor(nl: number, nc: number, step: number, background: p5.Image){
-    this.nl = nl
+  constructor(nc: number, nl: number, step: number, background: p5.Image){
     this.nc = nc
+    this.nl = nl
     this.step = step
     this.background = background
   }
@@ -69,7 +69,7 @@ function preload(){
 function setup(){
   wolf = new Entity(3, 3, size, wolfImg)
   rabbit = new Entity(2, 2, size, rabbitImg)
-  board = new Board(4, 4, size, backgroundImg)
+  board = new Board(4, 5, size, backgroundImg)
 
   createCanvas(board.nc * size, board.nl * size)
 }
