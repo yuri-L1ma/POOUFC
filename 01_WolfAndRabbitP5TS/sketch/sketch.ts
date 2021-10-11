@@ -1,16 +1,15 @@
-let wolfImg: p5.Image
-let rabbitImg: p5.Image
+let evaderImg: p5.Image
+let evaderWithBillImg: p5.Image
+let billImg: p5.Image
 let backgroundImg: p5.Image
 let fireImg: p5.Image
 
-let size: number = 100
-
-let wolf: Entity
-let rabbit: Entity
+let evader: Evader
+let bill: Bill
 let board: Board
-let fire: Obstacle
+let fire: Fire
 
-class Obstacle {
+class Fire {
   x: number
   y: number
   step: number
@@ -30,38 +29,67 @@ class Obstacle {
   draw(): void{
     image(this.img, this.x * this.step, this.y * this.step, this.width * this.step, this.height * this.step)
   }
-
-  colision(animal: Entity): boolean{
-    if(
-        animal.x >= this.x && 
-        animal.x <= (this.x - 1) + this.width &&
-        animal.y <= (this.y - 1) + this.height &&
-        animal.y >= this.y
-      ){
-      return true
-    }
-  }
 }
 
-class Entity {
+class Evader {
   x: number
   y: number
   step: number
   image: p5.Image
-  isDead: boolean
+  catchedBills: number
 
   constructor(x: number, y: number, step: number, image: p5.Image){
     this.x = x
     this.y = y
     this.step = step
     this.image = image
-    this.isDead = false
+    this.catchedBills = 0
   }
 
   draw(){
-    if(!this.isDead){
+    image(this.image, this.x * this.step, this.y * this.step, this.step, this.step)
+  }
+
+  update(bill: Bill): void{
+    if(this.takeABill(bill)){
+      bill.isTaked = true
+    }
+  }
+
+  takeABill(bill: Bill): boolean {
+    if(this.x == bill.x && this.y == bill.y){
+      this.image = evaderWithBillImg
+      return true
+    }
+
+    return false
+  }
+}
+
+class Bill {
+  x: number
+  y: number
+  step: number
+  image: p5.Image
+  isTaked: boolean
+
+  constructor(x: number, y: number, step: number, image: p5.Image){
+    this.x = x
+    this.y = y
+    this.step = step
+    this.image = image
+    this.isTaked = false
+  }
+
+  draw(){
+    if(!this.isTaked){
       image(this.image, this.x * this.step, this.y * this.step, this.step, this.step)
     }
+  }
+
+  update(board: Board){
+    this.x = Math.floor(random(0, board.nc))
+    this.y = Math.floor(random(0, board.nl))
   }
 }
 
@@ -95,97 +123,78 @@ class Board {
 function loadImg(path: string): p5.Image{
   return loadImage(
     path,
-    () => console.log("Loading ok"),
-    () => console.log("Loading error")
+    () => console.log(`Não deu erro nessa foto ${path}`),
+    () => console.log(`Deu erro nessa foto ${path}`)
   )
 }
 
 function preload(){
-  wolfImg = loadImg('../sketch/lobol.png')
-  rabbitImg = loadImg('../sketch/coelho.png')
-  backgroundImg = loadImg('../sketch/grama.jpg')
+  evaderImg = loadImg('../sketch/Sonegador.png')
+  evaderWithBillImg = loadImg('../sketch/SonegadorComConta.png')
+  billImg = loadImg('../sketch/Conta.png')
+  backgroundImg = loadImg('../sketch/FundoEstado.jpeg')
   fireImg = loadImg('../sketch/fire.gif')
 }
 
 function setup(){
-  wolf = new Entity(2, 3, size, wolfImg)
-  rabbit = new Entity(3, 2, size, rabbitImg)
-  board = new Board(4, 5, size, backgroundImg)
-  fire = new Obstacle(1, 1, size, 2, 2, fireImg)
+  let size: number = 100
+
+  board = new Board(6, 4, size, backgroundImg)
+  fire = new Fire(1, 1, size, 2, 2, fireImg)
+  bill = new Bill(Math.floor(random(0,board.nc)), Math.floor(random(0,board.nl)), size, billImg)
+  evader = new Evader(2, 3, size, evaderImg)
 
   createCanvas(board.nc * size, board.nl * size)
 }
 
 function keyPressed(){
   if(keyCode === LEFT_ARROW){
-    wolf.x--
+    evader.x--
   }else if(keyCode === RIGHT_ARROW){
-    wolf.x++
+    evader.x++
   }else if(keyCode === UP_ARROW){
-    wolf.y--
+    evader.y--
   }else if(keyCode === DOWN_ARROW){
-    wolf.y++
-  }
-
-  if(keyCode === "A".charCodeAt(0)){
-    rabbit.x--
-  }else if(keyCode === "D".charCodeAt(0)){
-    rabbit.x++
-  }else if(keyCode === "W".charCodeAt(0)){
-    rabbit.y--
-  }else if(keyCode === "S".charCodeAt(0)){
-    rabbit.y++
+    evader.y++
   }
 }
 
 function canMove(){
   // TRANCANDO O LOBO
-  if(wolf.x < 0){
-    wolf.x++
+  if(evader.x < 0){
+    evader.x++
   }
-  if(wolf.x > board.nc - 1){
-    wolf.x--
+  if(evader.x > board.nc - 1){
+    evader.x--
   }
-  if(wolf.y < 0){
-    wolf.y++
+  if(evader.y < 0){
+    evader.y++
   }
-  if(wolf.y > board.nl - 1){
-    wolf.y--
+  if(evader.y > board.nl - 1){
+    evader.y--
   }
 
   // LOOP DO COELHO
-  if(rabbit.x < 0){
-    rabbit.x = board.nc - 1
+  if(bill.x < 0){
+    bill.x = board.nc - 1
   }
-  if(rabbit.x > board.nc - 1){
-    rabbit.x = 0
+  if(bill.x > board.nc - 1){
+    bill.x = 0
   }
-  if(rabbit.y < 0){
-    rabbit.y = board.nl - 1
+  if(bill.y < 0){
+    bill.y = board.nl - 1
   }
-  if(rabbit.y > board.nl - 1){
-    rabbit.y = 0
+  if(bill.y > board.nl - 1){
+    bill.y = 0
   }
 }
 
 function draw(){
   board.draw()
-  wolf.draw()
-  rabbit.draw()
+
+  evader.draw()
+  evader.update(bill)
+
+  bill.draw()
   fire.draw()
-
-  canMove()
-
-  if(fire.colision(wolf)){
-    if(!wolf.isDead){
-      alert("LOBO MORREU")
-    }
-    wolf.isDead = true
-  }
-  if(fire.colision(rabbit)){
-    if(!rabbit.isDead){
-      alert("COELHO MORREU")
-    }
-    rabbit.isDead = true
-  }
 }
