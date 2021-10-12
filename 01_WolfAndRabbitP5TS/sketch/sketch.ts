@@ -3,11 +3,13 @@ let evaderWithBillImg: p5.Image
 let billImg: p5.Image
 let backgroundImg: p5.Image
 let fireImg: p5.Image
+let marcationImg: p5.Image
 
 let evader: Evader
 let bill: Bill
 let board: Board
 let fire: Fire
+let safe_area: Fire
 
 class Fire {
   x: number
@@ -27,7 +29,12 @@ class Fire {
   }
 
   draw(): void{
-    image(this.img, this.x * this.step, this.y * this.step, this.width * this.step, this.height * this.step)
+    if(this.img == null){
+      fill(`rgba(100%,100%,0%,0.2)`)
+      rect(this.x * this.step, this.y * this.step, this.width * this.step, this.height * this.step)
+    }else{
+      image(this.img, this.x * this.step, this.y * this.step, this.width * this.step, this.height * this.step)
+    }
   }
 }
 
@@ -50,19 +57,27 @@ class Evader {
     image(this.image, this.x * this.step, this.y * this.step, this.step, this.step)
   }
 
-  update(bill: Bill): void{
-    if(this.takeABill(bill)){
-      bill.isTaked = true
+  update(bill: Bill){
+    if(!bill.isTaked){
+      this.image = evaderImg
+    }else{
+      this.image = evaderWithBillImg
     }
   }
 
-  takeABill(bill: Bill): boolean {
+  takeABill(bill: Bill): boolean{
     if(this.x == bill.x && this.y == bill.y){
-      this.image = evaderWithBillImg
       return true
     }
+  }
 
-    return false
+  colision(area: Fire): boolean{
+    if(
+      this.x >= area.x && this.x <= area.x + area.width - 1 &&
+      this.y >= area.y && this.y <= area.y + area.height - 1
+      ){
+      return true
+    }
   }
 }
 
@@ -87,10 +102,12 @@ class Bill {
     }
   }
 
-  update(board: Board){
+  update(){
+    this.isTaked = false
     this.x = Math.floor(random(0, board.nc))
     this.y = Math.floor(random(0, board.nl))
   }
+
 }
 
 class Board {
@@ -140,9 +157,13 @@ function setup(){
   let size: number = 100
 
   board = new Board(6, 4, size, backgroundImg)
-  fire = new Fire(1, 1, size, 2, 2, fireImg)
+
+  fire = new Fire(1, 1, size, 3, 1, fireImg)
+  safe_area = new Fire(fire.x - 1, fire.y - 1, size, fire.width + 2, fire.height + 2, null)
+  
   bill = new Bill(Math.floor(random(0,board.nc)), Math.floor(random(0,board.nl)), size, billImg)
-  evader = new Evader(2, 3, size, evaderImg)
+
+  evader = new Evader(0, 0, size, evaderImg)
 
   createCanvas(board.nc * size, board.nl * size)
 }
@@ -157,44 +178,40 @@ function keyPressed(){
   }else if(keyCode === DOWN_ARROW){
     evader.y++
   }
+
+  if(evader.colision(safe_area) && bill.isTaked){
+    if(keyCode === "E".charCodeAt(0)){
+      evader.catchedBills++
+      alert("VOCÊ INCINEROU " + evader.catchedBills + " CONTAS")
+      bill.update()
+    }
+  }
 }
 
-function canMove(){
-  // TRANCANDO O LOBO
-  if(evader.x < 0){
-    evader.x++
-  }
-  if(evader.x > board.nc - 1){
-    evader.x--
-  }
-  if(evader.y < 0){
-    evader.y++
-  }
-  if(evader.y > board.nl - 1){
-    evader.y--
+function update(){
+  evader.update(bill)
+
+  if(evader.takeABill(bill)){
+    bill.isTaked = true
   }
 
-  // LOOP DO COELHO
-  if(bill.x < 0){
-    bill.x = board.nc - 1
-  }
-  if(bill.x > board.nc - 1){
-    bill.x = 0
-  }
-  if(bill.y < 0){
-    bill.y = board.nl - 1
-  }
-  if(bill.y > board.nl - 1){
-    bill.y = 0
+  if(evader.colision(fire)){
+    bill.isTaked = false
+    evader.catchedBills = 0
+    evader.x = 0
+    evader.y = 0
+    
+    alert("MORREU")
   }
 }
 
 function draw(){
   board.draw()
+  safe_area.draw()
 
   evader.draw()
-  evader.update(bill)
-
   bill.draw()
   fire.draw()
+
+  update()
 }
