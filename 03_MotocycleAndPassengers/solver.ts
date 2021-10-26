@@ -85,7 +85,8 @@ class Motorcycle {
     }
 
     toString(): string {
-        return `PESSOA NA motoca ${this.person}; PODER DA motoca ${this.power}; TEMPO DA motoca ${this.time}`
+        if(this.person != null)
+            return `PESSOA NA motoca ${this.person}; PODER DA motoca ${this.power}; TEMPO DA motoca ${this.time}`
     }
 }
 
