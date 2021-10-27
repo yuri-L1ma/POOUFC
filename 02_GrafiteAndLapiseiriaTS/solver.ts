@@ -23,7 +23,6 @@ class Grafite {
     }
 
     toString(): string {
-        //return "Grafite: " + this.calibre + ":" + this.dureza + ":" + this.tamanho;
         return `Grafite ${this.calibre}:${this.dureza}:${this.tamanho}`;
     }
 }
@@ -31,62 +30,86 @@ class Grafite {
 //agregação
 class Lapiseira {
     calibre: number;
-    private grafite: Grafite | null;
+    capacity: number;
+    private grafites: Grafite[] = []
 
-    constructor(calibre: number) { //é a lapiseira que cria o grafite?
+    constructor(calibre: number) { 
         this.calibre = calibre;
-        this.grafite = null;
     }
 
-    setGrafite(grafite: Grafite): boolean {
-        if (this.grafite != null) {
-            console.log("A lapiseira já possui um grafite");
-            return false;
+    addGrafite(grafite: Grafite): boolean {
+        if(grafite.calibre != this.calibre){
+            console.log("O CALIBRE DA LAPISEIRA NÃO É COMPATÍVEL")
+            return false
         }
-        if (grafite.calibre != this.calibre) {
-            console.log("O grafite não é compatível com a lapiseira");
-            return false;
+        
+        if(this.grafites.length == this.capacity){
+            console.log("A LAPISEIRA JÁ ESTÁ COM SUA CAPACIDADE MÁXIMA")
+            return false
         }
-        this.grafite = grafite;
-        return true;
+
+        this.grafites.push(grafite)
+        return true
     }
 
     removerGrafite(): Grafite | null {
-        if (this.grafite == null) {
+        if (this.grafites.length == 0) {
             console.log("A lapiseira não possui um grafite");
             return null;
         }
-        let grafite = this.grafite;
-        this.grafite = null;
-        return grafite;
+
+        let grafiteOut: Grafite = this.grafites.pop()
+
+        console.log(`FOI RETIRADO O GRAFITE QUE ESTAVA ATRÁS ${grafiteOut}`)
+        
+        return grafiteOut
     }
 
     escrever(folhas: number): boolean {
-        //verificar se existe grafite
-        if (this.grafite == null) {
-            console.log("A lapiseira não possui um grafite");
-            return false;
+        for(let i = 0; i < folhas; i++){
+            if (this.grafites.length == 0) {
+                console.log("NÃO HÁ NENHUM GRAFITE NA LAPISEIRA");
+                return false;
+            }
+
+            this.grafites[0].tamanho -= this.grafites[0].gastoPorFolha()
+
+            if(this.grafites[0].tamanho == 0){
+                console.log("Acabou um grafite! Vai vir outro em 3.. 2.. 1..")
+                this.grafites.shift()
+            }
         }
-        let gasto = this.grafite.gastoPorFolha() * folhas;
-        if (gasto <= this.grafite.tamanho) {
-            console.log("Escrita concluida");
-            this.grafite.tamanho -= gasto;
-        } else {
-            let realizado = this.grafite.tamanho / this.grafite.gastoPorFolha()
-            console.log("Escrita parcial: " + realizado + " folhas");
-            this.grafite.tamanho = 0;
-        }
-        if (this.grafite.tamanho == 0) {
-            this.grafite = null;
-        }        
+
+        return true
     }
 }
 
-let pentel = new Lapiseira(0.5);
-pentel.setGrafite(new Grafite(0.5, "HB", 40));
-pentel.escrever(10);
-pentel.escrever(40);
-console.log(pentel);
+let Pentel = new Lapiseira(0.5);
 
+console.log("================================")
+Pentel.addGrafite(new Grafite(0.5, "HB", 40));
+Pentel.addGrafite(new Grafite(0.5, "HB", 40));
+Pentel.addGrafite(new Grafite(0.5, "HB", 40));
+Pentel.addGrafite(new Grafite(0.5, "2B", 40));
+console.log(Pentel);
 
+console.log("================================")
+Pentel.escrever(50);
+console.log(Pentel);
 
+console.log("================================")
+Pentel.removerGrafite()
+console.log(Pentel);
+
+console.log("================================")
+Pentel.addGrafite(new Grafite(0.5, "4B", 60))
+console.log(Pentel);
+
+//É PRA DAR ERROR
+console.log("================================")
+Pentel.addGrafite(new Grafite(0.3, "2B", 60))
+console.log(Pentel);
+
+console.log("================================")
+Pentel.escrever(50);
+console.log(Pentel)
