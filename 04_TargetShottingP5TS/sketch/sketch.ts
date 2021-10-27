@@ -1,15 +1,15 @@
-class Bubble{
+class Target{
   x: number
   y: number
-  letter: string
+  img: p5.Image
   speed: number
   alive: boolean = true
+
   static radius: number = 20 //Static é uma propriedade da Classe não do objeto
 
-  constructor(x: number, y:number, letter:string, speed:number){
+  constructor(x: number, y:number, speed:number){
     this.x = x
     this.y = y
-    this.letter = letter
     this.speed = speed
   }
 
@@ -18,105 +18,146 @@ class Bubble{
   }
 
   draw(): void{
+    rectMode(CENTER)
+    noStroke()
+
+    fill(255, 0, 0)
+    circle(this.x, this.y, 2 * Target.radius)
+
     fill(255)
-    stroke(255)
-    circle(this.x, this.y, 2 * Bubble.radius)
+    circle(this.x, this.y, Target.radius + Target.radius/4)
 
-    fill(0)
-    stroke(0)
-    textSize(15)
-    text(this.letter, this.x - 5, this.y + 5)
+    fill(255, 0, 0)
+    circle(this.x, this.y, Target.radius/2)
+  }
+}
 
+class ShotMark{
+  image: p5.Image
+  x: number
+  y: number
+  width: number
+  height: number
+
+  constructor(x: number, y: number){
+    this.x = x
+    this.y = y
+    this.width = 16
+    this.height = 16
+    this.image = loadImage('sketch/shotMark.png')
+  }
+
+  draw(){
+    image(this.image, this.x, this.y, this.width, this.height)
   }
 }
 
 class Board{
-  bubbles: Bubble[] = []
+  targets: Target[] = []
+  shotMarks: ShotMark[] = []
   timer: number = 0
-  alphabet: string[] = []
   hits: number = 0
   errors: number = 0
+  markShot: p5.Image
+
   static timeout:number = 60
 
   constructor(){
   }
 
   update(): void{
-    this.checkBubbleTime()
-    this.markOutsideBubbles()
+    this.checkTargetTime()
+    this.markOutsideTargets()
 
-
-    for(let bubble of this.bubbles){
-      bubble.update()
+    for(let target of this.targets){
+      target.update()
     }
-
-    this.removeDeadBubbles()
   }
 
   draw(): void{
     stroke(255)
     fill(255)
     textSize(30)
-    text(`Ativas: ${this.bubbles.length} | Acertos ${this.hits} | Erros ${this.errors}`, 30, 50)
-    for(let bubble of this.bubbles){
-      bubble.draw()
+    text(`Ativas: ${this.targets.length} | Acertos ${this.hits} | Erros ${this.errors}`, 30, 50)
+
+    for(let mark of this.shotMarks){
+      mark.draw()
     }
+
+    for(let target of this.targets){
+      target.draw()
+    }
+
   }
 
-  addBubble(): void{
-    let x = random(0, width - 2 * Bubble.radius)
-    let y = - 2 * Bubble.radius
-    let letter = random(["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"])
-    let speed = random(1, 5)
+  addTarget(): void{
+    let x = random(0, width - 2 * Target.radius)
+    let y = - Target.radius
+    let speed = random(1, 2)
     
-    this.bubbles.push(new Bubble(x, y, letter, speed))
+    this.targets.push(new Target(x, y, speed))
+
+    this.shotMarks.shift()
   }
 
-  checkBubbleTime(): void{
+  checkTargetTime(): void{
     this.timer -= 1
 
     if(this.timer <= 0){
-      this.addBubble()
+      this.addTarget()
       this.timer = Board.timeout
     }
   }
 
-  markOutsideBubbles(): void{
-    for(let bubble of this.bubbles){
-      if(bubble.y + 2 * Bubble.radius >= height){
-        bubble.alive = false 
+  markOutsideTargets(): void{
+    for(let target of this.targets){
+      if(target.y - Target.radius >= height){
+        target.alive = false 
+        this.removeDeadTargets()
         this.errors++
       }
     }
   }
 
-  removeDeadBubbles(): void{
-    this.bubbles = this.bubbles.filter(b => b.alive)
+  removeDeadTargets(): void{
+    this.targets = this.targets.filter(b => b.alive)
 
-    // let aliviesBubbles: Bubble[] = []
+    // let aliviesTargets: Target[] = []
 
-    // for(let bubble of this.bubbles){
-    //   if(bubble.alive){
-    //     aliviesBubbles.push(bubble)
+    // for(let Target of this.Targets){
+    //   if(Target.alive){
+    //     aliviesTargets.push(Target)
     //   }
     // }
 
-    // this.bubbles = aliviesBubbles
+    // this.Targets = aliviesTargets
   }
 
-  removeByHit(code: number): void{
-    for(let bubble of this.bubbles){
-      if(bubble.letter[0].toUpperCase().charCodeAt(0) == code){
-        bubble.alive = false
+  removeByClick(x: number, y: number): void{
+    this.shotMarks.push(new ShotMark(x - 8, y - 8))
+
+    let numberOfTargets = this.targets.length
+
+    for(let target of this.targets){
+      let distance = dist(x, y, target.x, target.y)
+
+      if(distance < Target.radius){
+        target.alive = false
         this.hits++
+        this.removeDeadTargets()
       }
     }
-  }
 
+    if(numberOfTargets == this.targets.length){
+      this.errors++
+    }
+  }
 }
 
 class Game{
   board: Board
+  soundGun: p5.SoundFile
+  soundBG: p5.SoundFile
   activeState: () => void
 
   constructor(){
@@ -125,12 +166,18 @@ class Game{
   }
 
   gamePlay(): void{
-    background(50)
+    background('teal')
+    cursor('https://image.flaticon.com/icons/png/32/18/18554.png?ga=GA1.2.117944100.1633824000', 16, 16)
+
     this.board.draw()
     this.board.update()
 
-    if(this.board.errors > 10){
+    if(this.board.errors > 9){
       this.activeState = this.gameOver
+    }
+
+    if(!this.soundBG.isPlaying){
+      this.soundBG.play()
     }
   }
 
@@ -142,15 +189,31 @@ class Game{
   }
 }
 
-let game: Game
+let game: Game = new Game()
+let soundGun: p5.SoundFile 
+let soundBG: p5.SoundFile 
+let shotMark: p5.Image
+
+function preload(){
+  soundGun = loadSound('sketch/somTiro.wav')
+  soundBG = loadSound('sketch/musicaFundo.mp3')
+  shotMark = loadImage('sketch/shotMark.png')
+}
 
 function setup(){
   createCanvas(800, 600)
-  game = new Game()
+  game.board.markShot = shotMark
+  game.soundBG = soundBG
+  game.soundGun = soundGun
+
+  game.soundBG.setVolume(0.2)
+  game.soundBG.play()
 }
 
-function keyPressed(){
-  game.board.removeByHit(keyCode)
+function mouseClicked(){
+  game.board.removeByClick(mouseX, mouseY)
+  game.soundGun.setVolume(0.5)
+  game.soundGun.play()
 }
 
 function draw(){
