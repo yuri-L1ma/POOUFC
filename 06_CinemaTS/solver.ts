@@ -1,3 +1,8 @@
+import readline = require('readline-sync');
+
+let input = () => readline.question()
+let write = (x: any) => process.stdout.write("" + x)
+
 class Client{
     id: string;
     cellphone: string
@@ -76,35 +81,83 @@ class Room{
     }
 }
 
-let room = new Room(0);
-console.log("RESULTADO " + room + "\n");
-// [ ]
+class IO{
+    createRoom(): Room{
+        write("Qual a capacidade da sua sala de cinema? ")
+        let capacity = +input()
 
-room = new Room(5);
-console.log("RESULTADO " + room + "\n");
-// [ - - - - - ]
+        let room: Room = new Room(capacity)
 
-room = new Room(4);
-console.log("RESULTADO " + room + "\n");
-// [ - - - - ]
+        return room
+    }
 
-room.reserve("davi", "3232", 0);
-room.reserve("joao", "3131", 3);
-console.log("RESULTADO " + room + "\n");
-// [ davi:3232 - - joao:3131 ]
+    help() {
+        write("COMANDOS \n")
+        write("   init <capacity>: Inicia uma nova sala de cinema \n")
+        write("   show: Mostra a sala de cinema \n")
+        write("   reserve <id> <fone> <index>: Reservar um lugar na sala \n")
+        write("   cancel <id>: Cancelar um lugar \n")
+        write("   end: Sai do programa \n")
+    }
 
-room.reserve("rute", "3030", 0);
-// fail: cadeira ja esta ocupada
+    shell(){
+        let room: Room = this.createRoom()
 
-room.reserve("davi", "3234", 2);
-// fail: cliente ja esta no room
+        this.help()
 
-room.cancel("davi");
-console.log("RESULTADO " + room + "\n");
-// [ - - - joao:3131 ]
+        while(true){
+            let line = input()
+            let words = line.split(" ")
 
-room.cancel("rita");
-// // fail: cliente nao esta no room
+            if(words[0] == "end"){
+                break
+            }else if(words[0] == "show"){
+                write("" + room + "\n")
+            }else if(words[0] == "init"){
+                room = new Room(+words[1])
+            }else if(words[0] == "reserve"){
+                room.reserve(words[1], words[2], +words[3])
+            }else if(words[0] == "cancel"){
+                room.cancel(words[1])
+            }else{
+                write("COMANDO INVÁLIDO \n")
+            }
+        }
+    }
+}
 
-console.log("RESULTADO " + room + "\n");
+let io = new IO()
+io.shell()
+
+// let room = new Room(0);
+// console.log("RESULTADO " + room + "\n");
+// // [ ]
+
+// room = new Room(5);
+// console.log("RESULTADO " + room + "\n");
+// // [ - - - - - ]
+
+// room = new Room(4);
+// console.log("RESULTADO " + room + "\n");
+// // [ - - - - ]
+
+// room.reserve("davi", "3232", 0);
+// room.reserve("joao", "3131", 3);
+// console.log("RESULTADO " + room + "\n");
+// // [ davi:3232 - - joao:3131 ]
+
+// room.reserve("rute", "3030", 0);
+// // fail: cadeira ja esta ocupada
+
+// room.reserve("davi", "3234", 2);
+// // fail: cliente ja esta no room
+
+// room.cancel("davi");
+// console.log("RESULTADO " + room + "\n");
 // // [ - - - joao:3131 ]
+
+// room.cancel("rita");
+// // // fail: cliente nao esta no room
+
+// console.log("RESULTADO " + room + "\n");
+// // // [ - - - joao:3131 ]

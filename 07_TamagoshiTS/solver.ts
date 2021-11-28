@@ -169,7 +169,7 @@ class IO{
         write("Qual a saciedade máxima seu pet? ")
         let hungryMAX = +input()
     
-        write("Quão limpo é seu pet?")
+        write("Quão limpo é seu pet? ")
         let cleanMAX = +input()
     
         let pet: Pet = new Pet(energyMAX, hungryMAX, cleanMAX)
@@ -196,6 +196,14 @@ class IO{
                 break
             }else if(words[0] == "show"){
                 write("" + pet)
+            }else if(words[0] == "sleep"){
+                pet.sleep()
+            }else if(words[0] == "eat"){
+                pet.eat()
+            }else if(words[0] == "shower"){
+                pet.shower()
+            }else if(words[0] == "play"){
+                pet.play()
             }else if(words[0] == "init"){
                 pet = new Pet(+words[1], +words[2], +words[3])
             }else{
