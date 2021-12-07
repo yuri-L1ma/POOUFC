@@ -53,8 +53,8 @@
  }
 
  class Fone{
-     private label: string
-     private number: string
+     private label: string = " "
+     private number: string = " "
 
      constructor(label: string, number: string){
          this.setNumber(number)
@@ -104,7 +104,7 @@
  }
 
  class Schedule{
-     private contacts: Array<Contact> = []
+     private contacts: Map<string, Contact> = new Map()
 
      constructor(contacts: Array<Contact>){
          for(let contact of contacts){
@@ -112,35 +112,30 @@
          }
      }
 
-     public setContacts(contacts: Array<Contact>){
+     public setContacts(contacts: Map<string, Contact>){
          this.contacts = contacts
      }
 
      public addContact(contact: Contact){
-         let indexToSearch = this.findIndexByName(contact.getName())
-
-         if(indexToSearch != -1){
-             this.contacts[indexToSearch].setFones(contact.getFones())
+         if(this.contacts.has(contact.getName())){
+             this.contacts.get(contact.getName())!.setFones(contact.getFones())
          }else{
-             this.contacts.push(contact)
-             this.contacts.sort((a, b) => a.getName().localeCompare(b.getName()))
+             this.contacts.set(contact.getName(), contact)
          }
      }
 
-     public findIndexByName(name: string): number{
-         for(let i = 0; i < this.contacts.length; i++){
-             if(this.contacts[i].getName() == name){
-                 return i
-             }
-         }
-         return -1
-     }
+    //  public findIndexByName(name: string): number{
+    //      for(let i = 0; i < this.contacts.length; i++){
+    //          if(this.contacts[i].getName() == name){
+    //              return i
+    //          }
+    //      }
+    //      return -1
+    //  }
 
      public findContact(name: string): Contact | null{
-         let indexToSearch = this.findIndexByName(name)
-
-         if(indexToSearch != -1){
-             return this.contacts[indexToSearch]
+         if(this.contacts.has(name)){
+             return this.contacts.get(name)!
          }else{
              console.log("NÃO FOI POSSÍVEL ENCONTRAR UM CONTATO")
              return null
@@ -148,22 +143,19 @@
      }
 
      public removeContact(name: string){
-         let indexToSearch = this.findIndexByName(name)
-
-         if(indexToSearch != -1){
-             this.contacts.splice(indexToSearch, 1)
+         if(this.contacts.has(name)){
+             this.contacts.delete(name)
          }else{
              console.log("NÃO FOI POSSÍVEL ENCONTRAR UM CONTATO")
-             return null
          }
      }
 
      public searchContacts(pattern: string): Array<Contact>{
          let contactsOut = []
 
-         for(let contact of this.contacts){
-             if(contact.toString().toUpperCase().indexOf(pattern.toUpperCase()) != -1){
-                 contactsOut.push(contact)
+         for(let name of this.contacts.keys()){
+             if(name.toString().toUpperCase().indexOf(pattern.toUpperCase()) != -1){
+                 contactsOut.push(this.contacts.get(name)!)
              }
          }
 
@@ -172,9 +164,13 @@
 
      public toString(){
          let output: string = ""
+         let contacts: Array<Contact> = []
 
-         for(let contact of this.contacts){
-             output += `${contact}\n`
+         for(let contact of this.contacts.values()){
+             contacts.push(contact)
+         }
+         for(let contact of contacts.sort((a, b) => a.getName().localeCompare(b.getName()))){
+            output += `${contact}\n`
          }
 
          return output
@@ -198,7 +194,10 @@
  console.log(""+schedule)
 
  ///REMOVENDO O CONTATO 0 DE ANA "TIM"
- schedule.findContact("ana").removeFone(0)
+ let contactToBeRemoved = schedule.findContact("ana")
+ if(contactToBeRemoved != null){
+    contactToBeRemoved.removeFone(0)
+ }
  console.log("" + schedule)
 
  ///REMOVENDO BIA KK
