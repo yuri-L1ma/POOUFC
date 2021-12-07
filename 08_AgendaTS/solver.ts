@@ -123,6 +123,7 @@
              this.contacts[indexToSearch].setFones(contact.getFones())
          }else{
              this.contacts.push(contact)
+             this.contacts.sort((a, b) => a.getName().localeCompare(b.getName()))
          }
      }
 
@@ -172,7 +173,7 @@
      public toString(){
          let output: string = ""
 
-         for(let contact of this.contacts.sort()){
+         for(let contact of this.contacts){
              output += `${contact}\n`
          }
 
