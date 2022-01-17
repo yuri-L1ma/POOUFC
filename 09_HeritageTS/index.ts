@@ -38,10 +38,10 @@ class Motorized extends Vehicles{
         if(this.hasFuel()){
             let total_spent = this.capacity*(distance * this.spent);
             
-            if(total_spent < this.tank){
+            if(total_spent <= this.tank){
                 this.tank -= total_spent;
             } else {
-                console.log("Não há gasolina o suficiente! Vá ao Posto Ipiranga!")!
+                console.log("Não há gasolina o suficiente! Vá ao Posto Ipiranga!")
             }
         }
     }
@@ -70,4 +70,8 @@ class Beetle extends Motorized {
     }
 }
 
-let fusca: Beetle = new Beetle(120, "biiiiiiiii", 4, 100, 9.7, "YUR - 2002", "Volkswagem", "Preto", "1996")
+let fusca: Beetle = new Beetle(120, "biiiiiiiii", 4, 100, 0.5, "YUR - 2002", "Volkswagem", "Preto", "1996")
+
+console.log(""+fusca)
+fusca.move(50)
+console.log(fusca)
