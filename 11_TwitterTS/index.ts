@@ -35,6 +35,11 @@ class User{
         return this.inbox
     }
 
+    like(tweet_id:number){
+        let tweet: Tweet = this.inbox.getTweet(tweet_id)
+        tweet.like(this.username)
+    }
+
     toString(): string {
         return `Usuário: ${this.username} \nSeguidores: [${[...this.followers.keys()].join(", ")}] | Seguidos: [${[...this.following.keys()].join(", ")}]\n---------------\n${this.inbox}`
     }
@@ -61,6 +66,14 @@ class Inbox{
         let tweets: Tweet[] = [...this.timeline.values()]
         tweets = tweets.sort((a,b) => b.getId() - a.getId()) 
         return tweets
+    }
+
+    getTweet(id: number): Tweet {
+        if(this.timeline.has(id)){
+            return this.timeline.get(id)!
+        }else{
+            throw new Error("Tweet não encontrado")
+        }
     }
 
     toString(): string {        
@@ -118,11 +131,13 @@ class Tweet{
     private id: number
     private username: string
     private msg: string
+    private likes: string[]
 
     constructor(id: number, username: string, msg: string) {
         this.id = id
         this.username = username
         this.msg = msg
+        this.likes = []
     }
 
     getId() {
@@ -137,8 +152,16 @@ class Tweet{
         return this.msg
     }
 
+    getLikes(): string[] {
+        return this.likes
+    }
+
+    like(username: string){
+        this.likes.push(username)
+    }
+
     toString(): string {
-        return `${this.id}:${this.username} -> (${this.msg})`
+        return `${this.id}:${this.username} -> (${this.msg}) [${this.getLikes().join(", ")}]`
     }
 }
 
@@ -156,6 +179,7 @@ let user_natania = controller.getUser("natania")!
 
 user_yurizin.follow(user_savinha)
 user_savinha.follow(user_edoarno)
+user_savinha.follow(user_yurizin)
 user_edoarno.follow(user_yurizin)
 user_yurizin.follow(user_natania)
 
@@ -165,6 +189,12 @@ controller.sendTweet("edoarno", "Vá se lascar yuri otário")
 controller.sendTweet("savinha", "Yuri e edo, parem com essa briga feia macho")
 controller.sendTweet("natania", "Gente como usa o twitter")
 controller.sendTweet("yurizin", "A naty é jeganha kk, não segue ninguém e quer ajuda. Como ela vai ver os meus tweets. Muito jeganha kk")
+
+user_savinha.like(0)
+user_savinha.like(2)
+user_savinha.like(3)
+user_yurizin.like(0)
+user_yurizin.like(3)
 
 console.log(controller.toString())
 
